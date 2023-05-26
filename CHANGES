@@ -1,3 +1,8 @@
+Changes for version 1.76 (May 25, 2023)
+------------------------
+  - Patch to continue working on v5.38 upon its release (thanks, Karl
+    Williamson)
+
 Changes for version 1.75 (June 25, 2015)
 ------------------------
   - Export only necessary from POSIX (RT#99970, thanks Alexandr Ciornii)

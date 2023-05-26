@@ -211,7 +211,7 @@ our %EXPORT_TAGS = ( subs             => \@EXPORT_SUBS,
                      other_vars       => \@EXPORT_OTHER,
                      all              => \@EXPORT_ALL );
 
-our $VERSION = '1.75';
+our $VERSION = '1.76';
 
 # Refer to http://www.opengroup.org/onlinepubs/007908775/xbd/locale.html
 # for more details about the POSIX variables
