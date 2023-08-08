@@ -1,6 +1,11 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+  - Added support for terabytes. This feature was long omitted intentional for
+    support with 32-bit perls.  In 2026, we will assume that the user has a
+    64-bit perl and that on a 32-bit perl, they'll be used to coping.  (And
+    it's not the only use case, but… who has a terabyte of storage but a 32-bit
+    perl, anyway?)
   - converted to Dist::Zilla for future maintenance by RJBS
 
 Changes for version 1.76 (May 25, 2023)
