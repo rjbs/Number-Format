@@ -1,15 +1,13 @@
 package Number::Format;
 
+# ABSTRACT: Perl extension for formatting numbers
+
 # Minimum version is 5.10.0.  May work on earlier versions, but not
 # supported on any version older than 5.10.  Hack this line at your own risk:
 require 5.010;
 
 use strict;
 use warnings;
-
-=head1 NAME
-
-Number::Format - Perl extension for formatting numbers
 
 =head1 SYNOPSIS
 
@@ -31,14 +29,6 @@ Number::Format - Perl extension for formatting numbers
   $formatted = format_price($number, $precision, $symbol);
   $formatted = format_bytes($number, $precision);
   $number    = unformat_number($formatted);
-
-=head1 REQUIRES
-
-Perl, version 5.8 or higher.
-
-POSIX.pm to determine locale settings.
-
-Carp.pm is used for some error reporting.
 
 =head1 DESCRIPTION
 
@@ -62,9 +52,11 @@ formatting engine.  Valid parameters are:
   KILO_SUFFIX       - suffix to add when format_bytes formats kilobytes (trad)
   MEGA_SUFFIX       -    "    "  "    "        "         "    megabytes (trad)
   GIGA_SUFFIX       -    "    "  "    "        "         "    gigabytes (trad)
+  TERA_SUFFIX       -    "    "  "    "        "         "    terabytes (trad)
   KIBI_SUFFIX       - suffix to add when format_bytes formats kibibytes (iec)
   MEBI_SUFFIX       -    "    "  "    "        "         "    mebibytes (iec)
   GIBI_SUFFIX       -    "    "  "    "        "         "    gibibytes (iec)
+  TEBI_SUFFIX       -    "    "  "    "        "         "    tebibytes (iec)
 
 They may be specified in upper or lower case, with or without a
 leading hyphen ( - ).
@@ -103,9 +95,11 @@ the parameters are:
   KILO_SUFFIX       = 'K'
   MEGA_SUFFIX       = 'M'
   GIGA_SUFFIX       = 'G'
+  TERA_SUFFIX       = 'T'
   KIBI_SUFFIX       = 'KiB'
   MEBI_SUFFIX       = 'MiB'
   GIBI_SUFFIX       = 'GiB'
+  TEBI_SUFFIX       = 'TiB'
 
 Note however that when you first call one of the functions in this
 module I<without> using the object-oriented interface, further setting
@@ -130,16 +124,12 @@ calling C<format_negative()> if the number was less than 0.
 C<KILO_SUFFIX>, C<MEGA_SUFFIX>, and C<GIGA_SUFFIX> are used by
 C<format_bytes()> when the value is over 1024, 1024*1024, or
 1024*1024*1024, respectively.  The default values are "K", "M", and
-"G".  These apply in the default "traditional" mode only.  Note: TERA
-or higher are not implemented because of integer overflows on 32-bit
-systems.
+"G".  These apply in the default "traditional" mode only.
 
 C<KIBI_SUFFIX>, C<MEBI_SUFFIX>, and C<GIBI_SUFFIX> are used by
 C<format_bytes()> when the value is over 1024, 1024*1024, or
 1024*1024*1024, respectively.  The default values are "KiB", "MiB",
-and "GiB".  These apply in the "iso60027"" mode only.  Note: TEBI or
-higher are not implemented because of integer overflows on 32-bit
-systems.
+and "GiB".  These apply in the "iso60027"" mode only.
 
 The only restrictions on C<DECIMAL_POINT> and C<THOUSANDS_SEP> are that
 they must not be digits and must not be identical.  There are no
@@ -175,7 +165,6 @@ you can use the tag C<:all>.
 
 ###---------------------------------------------------------------------
 
-use strict;
 use Exporter;
 use Carp;
 use POSIX qw(localeconv);
@@ -196,8 +185,8 @@ our @EXPORT_LC_MONETARY =
 
 our @EXPORT_OTHER =
     qw( $DECIMAL_DIGITS $DECIMAL_FILL $NEG_FORMAT
-        $KILO_SUFFIX $MEGA_SUFFIX $GIGA_SUFFIX
-        $KIBI_SUFFIX $MEBI_SUFFIX $GIBI_SUFFIX );
+        $KILO_SUFFIX $MEGA_SUFFIX $GIGA_SUFFIX $TERA_SUFFIX
+        $KIBI_SUFFIX $MEBI_SUFFIX $GIBI_SUFFIX $TEBI_SUFFIX);
 
 our @EXPORT_VARS = ( @EXPORT_LC_NUMERIC, @EXPORT_LC_MONETARY, @EXPORT_OTHER );
 our @EXPORT_ALL  = ( @EXPORT_SUBS, @EXPORT_VARS );
@@ -210,8 +199,6 @@ our %EXPORT_TAGS = ( subs             => \@EXPORT_SUBS,
                      lc_monetary_vars => \@EXPORT_LC_MONETARY,
                      other_vars       => \@EXPORT_OTHER,
                      all              => \@EXPORT_ALL );
-
-our $VERSION = '1.76';
 
 # Refer to http://www.opengroup.org/onlinepubs/007908775/xbd/locale.html
 # for more details about the POSIX variables
@@ -245,9 +232,11 @@ our $NEG_FORMAT         = '-x';
 our $KILO_SUFFIX        = 'K';
 our $MEGA_SUFFIX        = 'M';
 our $GIGA_SUFFIX        = 'G';
+our $TERA_SUFFIX        = 'T';
 our $KIBI_SUFFIX        = 'KiB';
 our $MEBI_SUFFIX        = 'MiB';
 our $GIBI_SUFFIX        = 'GiB';
+our $TEBI_SUFFIX        = 'TiB';
 
 our $DEFAULT_LOCALE = { (
                          # LC_NUMERIC
@@ -279,9 +268,11 @@ our $DEFAULT_LOCALE = { (
                          kilo_suffix       => $KILO_SUFFIX,
                          mega_suffix       => $MEGA_SUFFIX,
                          giga_suffix       => $GIGA_SUFFIX,
+                         tera_suffix       => $TERA_SUFFIX,
                          kibi_suffix       => $KIBI_SUFFIX,
                          mebi_suffix       => $MEBI_SUFFIX,
                          gibi_suffix       => $GIBI_SUFFIX,
+                         tebi_suffix       => $TEBI_SUFFIX,
                         ) };
 
 #
@@ -375,15 +366,20 @@ sub _get_multipliers
     my($base) = @_;
     if (!defined($base) || $base == 1024)
     {
-        return ( kilo => 0x00000400,
-                 mega => 0x00100000,
-                 giga => 0x40000000 );
+        # the "tera" value is not portable, but we don't care, because we will
+        # only run on 64-bit-or-more architectures
+        no warnings 'portable';
+        return ( kilo => 0x00000000400,
+                 mega => 0x00000100000,
+                 giga => 0x00040000000,
+                 tera => 0x10000000000);
     }
     elsif ($base == 1000)
     {
         return ( kilo => 1_000,
                  mega => 1_000_000,
-                 giga => 1_000_000_000 );
+                 giga => 1_000_000_000,
+                 tera => 1_000_000_000_000 );
     }
     else
     {
@@ -392,7 +388,8 @@ sub _get_multipliers
             unless $base > 0 && $base == int($base);
         return ( kilo => $base,
                  mega => $base ** 2,
-                 giga => $base ** 3 );
+                 giga => $base ** 3,
+                 tera => $base ** 4);
     }
 }
 
@@ -412,18 +409,11 @@ sub _complain_undef
          if vec($bitmask, $offset, 1);
 }
 
-
-###---------------------------------------------------------------------
-
-=head1 METHODS
-
-=over 4
-
-=cut
-
 ##----------------------------------------------------------------------
 
-=item new( %args )
+=method new
+
+  my $formatter = Number::Format->new( %args );
 
 Creates a new Number::Format object.  Valid keys for %args are any of
 the parameters described above.  Keys may be in all uppercase or all
@@ -490,7 +480,9 @@ sub new
 
 ##----------------------------------------------------------------------
 
-=item round($number, $precision)
+=method round
+
+  my $str = $formatter->($number, $precision);
 
 Rounds the number to the specified precision.  If C<$precision> is
 omitted, the value of the C<DECIMAL_DIGITS> parameter is used (default
@@ -551,7 +543,9 @@ sub round
 
 ##----------------------------------------------------------------------
 
-=item format_number($number, $precision, $trailing_zeroes)
+=method format_number
+
+  my $str = $formatter->format_number($number, $precision, $trailing_zeroes);
 
 Formats a number by adding C<THOUSANDS_SEP> between each set of 3
 digits to the left of the decimal point, substituting C<DECIMAL_POINT>
@@ -657,7 +651,9 @@ sub format_number
 
 ##----------------------------------------------------------------------
 
-=item format_negative($number, $picture)
+=method format_negative
+
+  my $str = $formatter->($number, $picture);
 
 Formats a negative number.  Picture should be a string that contains
 the letter C<x> where the number should be inserted.  For example, for
@@ -688,7 +684,9 @@ sub format_negative
 
 ##----------------------------------------------------------------------
 
-=item format_picture($number, $picture)
+=method format_picture
+
+  my $str = $formatter->format_picture($number, $picture);
 
 Returns a string based on C<$picture> with the C<#> characters
 replaced by digits from C<$number>.  If the length of the integer part
@@ -821,7 +819,9 @@ sub format_picture
 
 ##----------------------------------------------------------------------
 
-=item format_price($number, $precision, $symbol)
+=method format_price
+
+  my $str = $formatter->format_price($number, $precision, $symbol);
 
 Returns a string containing C<$number> formatted similarly to
 C<format_number()>, except that the decimal portion may have trailing
@@ -989,9 +989,11 @@ sub format_price
 
 ##----------------------------------------------------------------------
 
-=item format_bytes($number, %options)
+=method format_bytes
 
-=item format_bytes($number, $precision)  # deprecated
+  my $str = $formatter->format_bytes($number, %options);
+
+  my $str = $formatter->format_bytes($number, $precision); # deprecated
 
 Returns a string containing C<$number> formatted similarly to
 C<format_number()>, except that large numbers may be abbreviated by
@@ -1036,9 +1038,9 @@ C<$MEGA_SUFFIX> or C<$MEBI_SUFFIX> appended to the end; etc.
 
 However if a value is given for C<unit> it will use that value
 instead.  The first letter (case-insensitive) of the value given
-indicates the threshhold for conversion; acceptable values are G (for
-giga/gibi), M (for mega/mebi), K (for kilo/kibi), or A (for automatic,
-the default).  For example:
+indicates the threshhold for conversion; acceptable values are T (for
+tera/tebi), G (for giga/gibi), M (for mega/mebi), K (for kilo/kibi), or
+A (for automatic, the default).  For example:
 
   format_bytes(1048576, unit => 'K') yields     '1,024K'
                                      instead of '1M'
@@ -1109,18 +1111,18 @@ sub format_bytes
         unless defined $options{precision}; # default
 
     $options{mode} ||= "traditional";
-    my($ksuff, $msuff, $gsuff);
+    my($ksuff, $msuff, $gsuff, $tsuff);
     if ($options{mode} =~ /^iec(60027)?$/i)
     {
-        ($ksuff, $msuff, $gsuff) =
-            @$self{qw(kibi_suffix mebi_suffix gibi_suffix)};
+        ($ksuff, $msuff, $gsuff, $tsuff) =
+            @$self{qw(kibi_suffix mebi_suffix gibi_suffix tebi_suffix)};
         croak "base option not allowed in iec60027 mode"
             if exists $options{base};
     }
     elsif ($options{mode} =~ /^trad(itional)?$/i)
     {
-        ($ksuff, $msuff, $gsuff) =
-            @$self{qw(kilo_suffix mega_suffix giga_suffix)};
+        ($ksuff, $msuff, $gsuff, $tsuff) =
+            @$self{qw(kilo_suffix mega_suffix giga_suffix tera_suffix)};
     }
     else
     {
@@ -1144,7 +1146,11 @@ sub format_bytes
     # automatically determine which unit to use.
     if ($unit eq 'A')
     {
-        if ($number >= $mult{giga})
+        if ($number >= $mult{tera})
+        {
+            $unit = 'T';
+        }
+        elsif ($number >= $mult{giga})
         {
             $unit = 'G';
         }
@@ -1165,7 +1171,12 @@ sub format_bytes
     # Based on unit, whether specified or determined above, divide the
     # number and determine what suffix to use.
     my $suffix = "";
-    if ($unit eq 'G')
+    if ($unit eq 'T')
+    {
+        $number /= $mult{tera};
+        $suffix = $tsuff;
+    }
+    elsif ($unit eq 'G')
     {
         $number /= $mult{giga};
         $suffix = $gsuff;
@@ -1191,7 +1202,9 @@ sub format_bytes
 
 ##----------------------------------------------------------------------
 
-=item unformat_number($formatted)
+=method unformat_number
+
+  my $str = $formatter->format_number($formatted);
 
 Converts a string as returned by C<format_number()>,
 C<format_price()>, or C<format_picture()>, and returns the
@@ -1213,10 +1226,10 @@ If the number matches the pattern of C<NEG_FORMAT> I<or> there is a
 returned.
 
 If the number ends with the C<KILO_SUFFIX>, C<KIBI_SUFFIX>,
-C<MEGA_SUFFIX>, C<MEBI_SUFFIX>, C<GIGA_SUFFIX>, or C<GIBI_SUFFIX>
-characters, then the number returned will be multiplied by the
-appropriate multiple of 1024 (or if the base option is given, by the
-multiple of that value) as appropriate.  Examples:
+C<MEGA_SUFFIX>, C<MEBI_SUFFIX>, C<GIGA_SUFFIX>, C<GIBI_SUFFIX>,
+C<TERA_SUFFIX>, or C<TEBI_SUFFIX> characters, then the number returned
+will be multiplied by the appropriate multiple of 1024 (or if the base
+option is given, by the multiple of that value) as appropriate.  Examples:
 
   unformat_number("4K", base => 1024)   yields  4096
   unformat_number("4K", base => 1000)   yields  4000
@@ -1253,13 +1266,15 @@ sub unformat_number
                     \Q$self->{mon_decimal_point}\E)/x;
     }
 
-    # Detect if it ends with one of the kilo / mega / giga suffixes.
+    # Detect if it ends with one of the kilo / mega / giga / tera suffixes.
     my $kp = ($formatted =~
               s/\s*($self->{kilo_suffix}|$self->{kibi_suffix})\s*$//);
     my $mp = ($formatted =~
               s/\s*($self->{mega_suffix}|$self->{mebi_suffix})\s*$//);
     my $gp = ($formatted =~
               s/\s*($self->{giga_suffix}|$self->{gibi_suffix})\s*$//);
+    my $tp = ($formatted =~
+              s/\s*($self->{tera_suffix}|$self->{tebi_suffix})\s*$//);
     my %mult = _get_multipliers($options{base});
 
     # Split number into integer and decimal parts
@@ -1286,6 +1301,7 @@ sub unformat_number
     $number *= $mult{kilo} if $kp;
     $number *= $mult{mega} if $mp;
     $number *= $mult{giga} if $gp;
+    $number *= $mult{tera} if $tp;
 
     return $number;
 }
@@ -1299,21 +1315,6 @@ sub unformat_number
 Some systems, notably OpenBSD, may have incomplete locale support.
 Using this module together with L<setlocale(3)> in OpenBSD may therefore
 not produce the intended results.
-
-=head1 BUGS
-
-No known bugs at this time.  Report bugs using the CPAN request
-tracker at L<https://rt.cpan.org/NoAuth/Bugs.html?Dist=Number-Format>
-or by email to the author.
-
-=head1 AUTHOR
-
-William R. Ward, SwPrAwM@cpan.org (remove "SPAM" before sending email,
-leaving only my initials)
-
-=head1 SEE ALSO
-
-perl(1).
 
 =cut
 
