@@ -1,15 +1,13 @@
 package Number::Format;
 
+# ABSTRACT: Perl extension for formatting numbers
+
 # Minimum version is 5.10.0.  May work on earlier versions, but not
 # supported on any version older than 5.10.  Hack this line at your own risk:
 require 5.010;
 
 use strict;
 use warnings;
-
-=head1 NAME
-
-Number::Format - Perl extension for formatting numbers
 
 =head1 SYNOPSIS
 
@@ -31,14 +29,6 @@ Number::Format - Perl extension for formatting numbers
   $formatted = format_price($number, $precision, $symbol);
   $formatted = format_bytes($number, $precision);
   $number    = unformat_number($formatted);
-
-=head1 REQUIRES
-
-Perl, version 5.8 or higher.
-
-POSIX.pm to determine locale settings.
-
-Carp.pm is used for some error reporting.
 
 =head1 DESCRIPTION
 
@@ -175,7 +165,6 @@ you can use the tag C<:all>.
 
 ###---------------------------------------------------------------------
 
-use strict;
 use Exporter;
 use Carp;
 use POSIX qw(localeconv);
@@ -210,8 +199,6 @@ our %EXPORT_TAGS = ( subs             => \@EXPORT_SUBS,
                      lc_monetary_vars => \@EXPORT_LC_MONETARY,
                      other_vars       => \@EXPORT_OTHER,
                      all              => \@EXPORT_ALL );
-
-our $VERSION = '1.76';
 
 # Refer to http://www.opengroup.org/onlinepubs/007908775/xbd/locale.html
 # for more details about the POSIX variables
@@ -412,18 +399,11 @@ sub _complain_undef
          if vec($bitmask, $offset, 1);
 }
 
-
-###---------------------------------------------------------------------
-
-=head1 METHODS
-
-=over 4
-
-=cut
-
 ##----------------------------------------------------------------------
 
-=item new( %args )
+=method new
+
+  my $formatter = Number::Format->new( %args );
 
 Creates a new Number::Format object.  Valid keys for %args are any of
 the parameters described above.  Keys may be in all uppercase or all
@@ -490,7 +470,9 @@ sub new
 
 ##----------------------------------------------------------------------
 
-=item round($number, $precision)
+=method round
+
+  my $str = $formatter->($number, $precision);
 
 Rounds the number to the specified precision.  If C<$precision> is
 omitted, the value of the C<DECIMAL_DIGITS> parameter is used (default
@@ -551,7 +533,9 @@ sub round
 
 ##----------------------------------------------------------------------
 
-=item format_number($number, $precision, $trailing_zeroes)
+=method format_number
+
+  my $str = $formatter->format_number($number, $precision, $trailing_zeroes);
 
 Formats a number by adding C<THOUSANDS_SEP> between each set of 3
 digits to the left of the decimal point, substituting C<DECIMAL_POINT>
@@ -657,7 +641,9 @@ sub format_number
 
 ##----------------------------------------------------------------------
 
-=item format_negative($number, $picture)
+=method format_negative
+
+  my $str = $formatter->($number, $picture);
 
 Formats a negative number.  Picture should be a string that contains
 the letter C<x> where the number should be inserted.  For example, for
@@ -688,7 +674,9 @@ sub format_negative
 
 ##----------------------------------------------------------------------
 
-=item format_picture($number, $picture)
+=method format_picture
+
+  my $str = $formatter->format_picture($number, $picture);
 
 Returns a string based on C<$picture> with the C<#> characters
 replaced by digits from C<$number>.  If the length of the integer part
@@ -821,7 +809,9 @@ sub format_picture
 
 ##----------------------------------------------------------------------
 
-=item format_price($number, $precision, $symbol)
+=method format_price
+
+  my $str = $formatter->format_price($number, $precision, $symbol);
 
 Returns a string containing C<$number> formatted similarly to
 C<format_number()>, except that the decimal portion may have trailing
@@ -989,9 +979,11 @@ sub format_price
 
 ##----------------------------------------------------------------------
 
-=item format_bytes($number, %options)
+=method format_bytes
 
-=item format_bytes($number, $precision)  # deprecated
+  my $str = $formatter->format_bytes($number, %options);
+
+  my $str = $formatter->format_bytes($number, $precision); # deprecated
 
 Returns a string containing C<$number> formatted similarly to
 C<format_number()>, except that large numbers may be abbreviated by
@@ -1191,7 +1183,9 @@ sub format_bytes
 
 ##----------------------------------------------------------------------
 
-=item unformat_number($formatted)
+=method unformat_number
+
+  my $str = $formatter->format_number($formatted);
 
 Converts a string as returned by C<format_number()>,
 C<format_price()>, or C<format_picture()>, and returns the
@@ -1299,21 +1293,6 @@ sub unformat_number
 Some systems, notably OpenBSD, may have incomplete locale support.
 Using this module together with L<setlocale(3)> in OpenBSD may therefore
 not produce the intended results.
-
-=head1 BUGS
-
-No known bugs at this time.  Report bugs using the CPAN request
-tracker at L<https://rt.cpan.org/NoAuth/Bugs.html?Dist=Number-Format>
-or by email to the author.
-
-=head1 AUTHOR
-
-William R. Ward, SwPrAwM@cpan.org (remove "SPAM" before sending email,
-leaving only my initials)
-
-=head1 SEE ALSO
-
-perl(1).
 
 =cut
 
