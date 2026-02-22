@@ -1305,13 +1305,15 @@ sub unformat_number
 
 ###---------------------------------------------------------------------
 
-=back
-
 =head1 CAVEATS
 
 Some systems, notably OpenBSD, may have incomplete locale support.
 Using this module together with L<setlocale(3)> in OpenBSD may therefore
 not produce the intended results.
+
+This library takes some pain to cope with numeric precision, but it doesn't
+solve every problem.  Working with terabyte sizes on a 32-bit perl may have
+imprecise results.
 
 =cut
 
