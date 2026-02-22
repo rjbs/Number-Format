@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+1.77      2026-02-22 18:23:39-05:00 America/New_York (TRIAL RELEASE)
   - Added support for terabytes. This feature was long omitted intentional for
     support with 32-bit perls.  In 2026, we will assume that the user has a
     64-bit perl and that on a 32-bit perl, they'll be used to coping.  (And
