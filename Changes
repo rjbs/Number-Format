@@ -2,6 +2,9 @@ Revision history for {{$dist->name}}
 
 {{$NEXT}}
 
+1.78      2026-09-13 10:43:09-07:00 America/Los_Angeles
+  - just making the previous release become a stable release
+
 1.77      2026-02-22 18:23:39-05:00 America/New_York (TRIAL RELEASE)
   - Added support for terabytes. This feature was long omitted intentional for
     support with 32-bit perls.  In 2026, we will assume that the user has a
