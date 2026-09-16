@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+  - format_picture no longer warns about an uninitialized value when
+    neg_format has no prefix, like "x" (RT#148306)
 
 1.78      2026-09-13 10:43:09-07:00 America/Los_Angeles
   - just making the previous release become a stable release
