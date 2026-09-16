@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+  - format_number keeps the sign on tiny negative numbers that fall back to
+    scientific notation (RT#77643, thanks gsullivan)
   - format_picture no longer warns about an uninitialized value when
     neg_format has no prefix, like "x" (RT#148306)
 

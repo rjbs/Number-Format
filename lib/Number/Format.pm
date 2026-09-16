@@ -605,7 +605,7 @@ sub format_number
     if ($number =~ /^(-?[\d.]+)e([+-]\d+)$/)
     {
         # Don't attempt to format numbers that require scientific notation.
-        return $number;
+        return ($sign < 0) ? $self->format_negative($number) : $number;
     }
 
     # Split integer and decimal parts of the number and add commas
