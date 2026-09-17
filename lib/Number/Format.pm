@@ -1013,6 +1013,15 @@ standard 60027 "KiB," "MiB," or "GiB" depending on the "mode" option.
 
 Negative values will result in an error.
 
+The abbreviated value is passed through C<format_number()>, so the
+object's C<THOUSANDS_SEP>, C<DECIMAL_POINT>, and C<DECIMAL_FILL>
+settings all apply, and there is no per-call option to override them.
+In particular, to get trailing zeroes (for aligning a column of sizes,
+say) build the formatter with C<< decimal_fill => 1 >>:
+
+  Number::Format->new->format_bytes(2048)                     yields 2K
+  Number::Format->new(decimal_fill => 1)->format_bytes(2048)  yields 2.00K
+
 The second parameter can be either a hash that sets options, or a
 number.  Using a number here is deprecated and will generate a
 warning; early versions of Number::Format only allowed a numeric

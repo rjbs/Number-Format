@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+  - document that format_bytes inherits the object's format_number settings,
+    including decimal_fill for trailing zeroes (RT#125400)
   - document that format_price follows the locale's monetary sign rules and
     does not consult NEG_FORMAT (RT#124862)
   - documentation no longer claims that assigning to the exported :vars
