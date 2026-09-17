@@ -6,7 +6,8 @@ Revision history for {{$dist->name}}
   - document that format_price follows the locale's monetary sign rules and
     does not consult NEG_FORMAT (RT#124862)
   - documentation no longer claims that assigning to the exported :vars
-    variables affects the functional interface; it never did (RT#73717)
+    variables affects the functional interface; that has been broken since
+    v1.60 in 2008 (RT#73717)
   - format_number keeps the sign on tiny negative numbers that fall back to
     scientific notation (RT#77643, thanks gsullivan)
   - format_picture no longer warns about an uninitialized value when

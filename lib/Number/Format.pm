@@ -72,14 +72,8 @@ of this package at <SwPrAwM@cpan.org> (remove "SPAM" to get correct
 email address) for help.
 
 If any of the above parameters are not specified when you invoke
-C<new()>, then the values are taken from the current locale, and
-failing that from package global variables of the same name (e.g.
-C<$DECIMAL_POINT> is the default for the C<DECIMAL_POINT> parameter).
-Those variables are read once, when the module is loaded.  You can
-import them with the C<:vars> tag to inspect the built-in defaults, but
-assigning to them afterward has no effect on formatting; to use
-non-default parameters, pass them to C<new()>.  The default values for
-all the parameters are:
+C<new()>, the values are taken from the current locale, and failing
+that from these built-in defaults:
 
   THOUSANDS_SEP     = ','
   DECIMAL_POINT     = '.'
@@ -147,19 +141,20 @@ the functions directly:
   my $formatted = format_number($number);
 
 In that case the parameters come from the current locale and the
-built-in defaults, and there is no way to override them.  Assigning to
-the exported variables (C<$THOUSANDS_SEP> and so on) does not change
-what the functions do.  If you need non-default parameters, use the
-object oriented interface.
+built-in defaults, and there is no way to override them.  If you need
+non-default parameters, use the object oriented interface.
 
 =head1 EXPORTS
 
-Nothing is exported by default.  To export the functions or the global
-variables defined herein, specify the function name(s) on the import
-list of the C<use Number::Format> statement.  To export all functions
-defined herein, use the special tag C<:subs>.  To export the
-variables, use the special tag C<:vars>; to export both subs and vars
-you can use the tag C<:all>.
+Nothing is exported by default.  To export functions, name them on the
+import list of the C<use Number::Format> statement, or use the tag
+C<:subs> to export all of them.
+
+The tag C<:vars> (and the variables half of C<:all>) still exists for
+compatibility, but it no longer has any useful purpose.  It exports a
+set of package variables that were once the way to configure the
+functional interface; assigning to them has had no effect since version
+1.60 in 2008.  Use C<new()> instead.
 
 =cut
 
