@@ -839,6 +839,13 @@ given; if set to the empty string, or if set to undef and the
 C<INT_CURR_SYMBOL> attribute of the object is the empty string, no
 currency will be added.
 
+Negative prices are laid out according to the locale's monetary sign
+rules: C<NEGATIVE_SIGN>, C<N_SIGN_POSN>, C<N_CS_PRECEDES>, and
+C<N_SEP_BY_SPACE>.  Unlike C<format_number()>, C<format_price()> does
+I<not> consult C<NEG_FORMAT>.  To show negative prices in parentheses,
+for example, set C<N_SIGN_POSN> to 0 rather than setting C<NEG_FORMAT>
+to C<(x)>.
+
 If C<$precision> is not provided, the default of 2 will be used.
 Examples:
 
