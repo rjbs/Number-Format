@@ -1,6 +1,8 @@
 Revision history for {{$dist->name}}
 
 {{$NEXT}}
+
+1.79      2026-09-17 07:27:17-04:00 America/New_York
   - document that format_bytes inherits the object's format_number settings,
     including decimal_fill for trailing zeroes (RT#125400)
   - document that format_price follows the locale's monetary sign rules and
