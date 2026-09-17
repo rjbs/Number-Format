@@ -2,11 +2,7 @@ package Number::Format;
 
 # ABSTRACT: Perl extension for formatting numbers
 
-# Minimum version is 5.10.0.  May work on earlier versions, but not
-# supported on any version older than 5.10.  Hack this line at your own risk:
-require 5.010;
-
-use strict;
+use v5.12.0;
 use warnings;
 
 =head1 SYNOPSIS
