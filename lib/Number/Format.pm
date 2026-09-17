@@ -76,13 +76,14 @@ of this package at <SwPrAwM@cpan.org> (remove "SPAM" to get correct
 email address) for help.
 
 If any of the above parameters are not specified when you invoke
-C<new()>, then the values are taken from package global variables of
-the same name (e.g.  C<$DECIMAL_POINT> is the default for the
-C<DECIMAL_POINT> parameter).  If you use the C<:vars> keyword on your
-C<use Number::Format> line (see non-object-oriented example below) you
-will import those variables into your namesapce and can assign values
-as if they were your own local variables.  The default values for all
-the parameters are:
+C<new()>, then the values are taken from the current locale, and
+failing that from package global variables of the same name (e.g.
+C<$DECIMAL_POINT> is the default for the C<DECIMAL_POINT> parameter).
+Those variables are read once, when the module is loaded.  You can
+import them with the C<:vars> tag to inspect the built-in defaults, but
+assigning to them afterward has no effect on formatting; to use
+non-default parameters, pass them to C<new()>.  The default values for
+all the parameters are:
 
   THOUSANDS_SEP     = ','
   DECIMAL_POINT     = '.'
@@ -143,14 +144,17 @@ For example, a German user might include this in their code:
                                -int_curr_symbol => 'DEM');
   my $formatted = $de->format_number($number);
 
-Or, if you prefer not to use the object oriented interface, you can do
-this instead:
+Or, if you prefer not to use the object oriented interface, you can call
+the functions directly:
 
-  use Number::Format qw(:subs :vars);
-  $THOUSANDS_SEP   = '.';
-  $DECIMAL_POINT   = ',';
-  $INT_CURR_SYMBOL = 'DEM';
+  use Number::Format qw(:subs);
   my $formatted = format_number($number);
+
+In that case the parameters come from the current locale and the
+built-in defaults, and there is no way to override them.  Assigning to
+the exported variables (C<$THOUSANDS_SEP> and so on) does not change
+what the functions do.  If you need non-default parameters, use the
+object oriented interface.
 
 =head1 EXPORTS
 
